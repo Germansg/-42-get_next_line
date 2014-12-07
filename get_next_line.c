@@ -14,7 +14,6 @@
 #include "get_next_line.h"
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdio.h>
 
 int	read_from_fd_into_stock(int const fd, char **stock)
 {
