@@ -12,16 +12,25 @@
 
 #include "libft.h"
 #include "get_next_line.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
 
-int	read_from_fd_into_stock(int const fd, char *stock)
+int	read_from_fd_into_stock(int const fd, char **stock)
 {
-	static char	buff[BUFF_SIZE = { ENDL };
+	static char	buff[BUFF_SIZE+1] = { ENDL };
 	int			read_bytes;
+    char        *nstr;
 
 	read_bytes = read(fd, buff, BUFF_SIZE);
 	if (read_bytes > 0)
 	{
-		// append to stock
+        buff[read_bytes] = '\0';
+        nstr = ft_strjoin(*stock, buff);
+        if (!nstr)
+            return (-1);
+        free(*stock);
+        *stock = nstr;
 	}
 	return (read_bytes);
 }
@@ -29,19 +38,29 @@ int	read_from_fd_into_stock(int const fd, char *stock)
 int get_next_line(int const fd, char ** line)
 {
 	static char	*stock = NULL;
-	static char	*stock_end = NULL;
 	char		*endl_index;
-	char		*buff;
+    int         ret;
 
-	// check if there's line in stock
+    if (!stock && (stock = (char *)ft_memalloc(sizeof(char))) == NULL)
+        return (-1);
 	endl_index = ft_strchr(stock, ENDL);
-
-	// if didn't find line, read BUFFER_SIZE bytes from fd until there's a line or EOF
-	if (endl_index == NULL)
+	while (endl_index == NULL)
 	{
+        ret = read_from_fd_into_stock(fd, &stock);
+        if (ret == 0)
+        {
+            if ( (endl_index = ft_strchr(stock, '\0')) == stock )
+                return (0);
+        } else if (ret < 0)
+            return (-1);
+        else
+            endl_index = ft_strchr(stock, ENDL);
 	}
-
-	// extract line from stock into new string, and put it in var `line`. correctly update stock_end.
-
+    *line = ft_strsub(stock, 0, endl_index - stock);
+    if (!*line)
+        return (-1);
+    endl_index = ft_strdup(endl_index + 1);
+    free(stock);
+    stock = endl_index;
 	return (1);
 }
